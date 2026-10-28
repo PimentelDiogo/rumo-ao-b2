@@ -93,8 +93,8 @@ ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .tag.h{background:var(--sunk);color:var(--muted)}
 .vlink{font-size:12.5px;margin-left:4px;white-space:nowrap}
 .sep{border:0;border-top:1px dashed var(--line);margin:2px 0}
-.review .chips{display:flex;flex-wrap:wrap;gap:5px}
-.review .chips span{font-size:12px;padding:2px 7px;border-radius:4px}
+.review.chips{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.review.chips span{font-size:12px;padding:2px 7px;border-radius:4px;white-space:normal;overflow-wrap:anywhere;max-width:100%}
 .note{font-size:13px;color:var(--muted);margin:0}
 .checkpoint{background:var(--voc-bg);border-radius:8px;padding:10px 12px;font-size:13.5px}
 .checkpoint b{color:var(--voc)}
@@ -112,7 +112,9 @@ ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .btn.sm,select.sm{font-size:12.5px;padding:4px 8px;border:1px solid var(--line);background:var(--surface);border-radius:6px;cursor:pointer;max-width:100%}
 /* listening (YouTube) */
 .listen{display:flex;flex-direction:column;gap:3px;padding:6px 8px;background:var(--sunk);border-radius:6px;font-size:13px}
-.lrow{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.lrow{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;min-width:0}
+.lrow a{overflow-wrap:anywhere}
+.lrow .ch{font-size:11.5px;color:var(--muted)}
 .copy{border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:0 6px;font-size:11.5px;cursor:pointer;color:var(--muted)}
 .vlist{list-style:none;margin:0;padding:0;columns:2 240px;column-gap:20px}
 .vlist li{break-inside:avoid;padding:2px 0;font-size:13.5px}

@@ -46,11 +46,20 @@ const LISTEN_RULES: [RegExp, string][] = [
   [/complain|faulty/i, "AlJ5w1oP1Gc"], [/apolog|manners|refus|thank/i, "xoqX3VYD8No"],
   [/greeting|introducing|countries|personal information/i, "_Y4NVXuPAfc"]
 ];
-function listenFor(items: Lesson[]): [string, string][] {
-  const ids: string[] = [];
-  items.forEach(it => { const r = LISTEN_RULES.find(x => x[0].test(it[0])); if (r && !ids.includes(r[1])) ids.push(r[1]); });
-  return ids.slice(0, 2).map(id => LISTEN.find(x => x[0] === id)).filter((x): x is [string, string] => !!x);
+interface Listen { url: string; title: string; ch: string }
+/* cada aula tem o seu vídeo (TOPIC_VIDEOS); sem ele, cai na playlist pelo tema. "seen" evita repetir na mesma semana */
+function listenFor(items: Lesson[], seen: Set<string>): Listen[] {
+  const out: Listen[] = [];
+  items.forEach(it => {
+    const tv = TOPIC_VIDEOS[it[2]];
+    if (tv && !seen.has(tv[0])) { seen.add(tv[0]); out.push({ url: "https://www.youtube.com/watch?v=" + tv[0], title: tv[1], ch: tv[2] }); return; }
+    const r = LISTEN_RULES.find(x => x[0].test(it[0])), pl = r && LISTEN.find(x => x[0] === r[1]);
+    if (pl && !seen.has(pl[0])) { seen.add(pl[0]); out.push({ url: YT(pl[0]), title: pl[1], ch: "Listening Time" }); }
+  });
+  return out.slice(0, 3);
 }
+const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+const short = (s: string) => s.length > 70 ? s.slice(0, 67).trimEnd() + "…" : s;
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -208,6 +217,7 @@ function week() {
   const tip = [...new Set(idxs.map(i => DAYS[i].w))].map(w => TIPS[w]).filter(Boolean)[0];
   $("focus").innerHTML = tip ? `<b>Foco:</b> ${tip}` : `<b>Foco:</b> assista, repita em voz alta e anote 5 frases úteis por dia.`;
   let html = "";
+  const seenListen = new Set<string>();
   for (let d = 0; d < 7; d++) {
     const dt = dayDate(wk, d), di = iso(dt), isToday = iso(today) === di, keys: string[] = [];
     let body = "";
@@ -217,8 +227,8 @@ function week() {
       if (lessons.length) body += `<hr class="sep">`;
       const kp = `p-${di}`, kc = `c-${di}`; keys.push(kp);
       body += task(kp, "Praktika (20–30 min)", "h", "app") + task(kc, "Podcast (opcional)", "h", "ouvir");
-      const ls = listenFor(lessons);
-      if (ls.length) body += `<li class="listen"><span class="note">Listening do tema:</span>` + ls.map(v => `<div class="lrow"><a href="${YT(v[0])}" target="_blank" rel="noopener">${v[1]} ↗</a> <button class="copy" type="button" data-copy="${YT(v[0])}">copiar link</button></div>`).join("") + `</li>`;
+      const ls = listenFor(lessons, seenListen);
+      if (ls.length) body += `<li class="listen"><span class="note">Listening do tema:</span>` + ls.map(v => `<div class="lrow"><a href="${v.url}" target="_blank" rel="noopener" title="${esc(v.title)}">${esc(short(v.title))} ↗</a> <span class="ch">${esc(v.ch)}</span> <button class="copy" type="button" data-copy="${v.url}">copiar link</button></div>`).join("") + `</li>`;
       body = `<ul class="tasks">${body}</ul>` + (lessons.length ? "" : `<p class="note">Dia sem aula nova neste ritmo. Use Praktika, revisão ou adiante uma aula.</p>`);
     } else if (d === 5) {
       const chips = items.map(it => `<span class="tag ${it[1]}">${it[0]}</span>`).join("");
