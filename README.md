@@ -66,6 +66,8 @@ Podcasts sugeridos: *BBC 6 Minute English*, *Business English Pod* e, a partir d
 
 Cada aula de vocabulário e de tópico tem o seu próprio vídeo de listening, de canais de professores de inglês (BBC Learning English, Bob the Canadian, English with Lucy, engVid, Oxford Online English, British Council e outros). Cada dia de semana mostra até 3 desses vídeos, com link para abrir e botão para copiar, sem repetir vídeo na mesma semana.
 
+Além disso, cerca de 100 aulas (inclusive de gramática) têm um link **Ronnie ↗** ao lado do **assistir ↗**: uma aula da [Ronnie, do engVid](https://www.youtube.com/@engvidRonnie) sobre o mesmo assunto, como segunda opção de explicação.
+
 Quando uma aula não tem vídeo próprio, entra um vídeo da [playlist de listening A2](https://www.youtube.com/playlist?list=PLhNRdHEdUQexUblCTMd1ATwOd5J4SxtNM) do mesmo tema. A lista completa dessa playlist fica no painel **Listening A2**.
 
 ## Resumo para o tutor

@@ -166,7 +166,9 @@ function task(key: string, labelHtml: string, tagCls: string, tagTxt: string, ex
   const on = !!state.done[key], id = "t" + (uid++);
   return `<li class="task${on ? " on" : ""}"><input type="checkbox" id="${id}" data-k="${key}" ${on ? "checked" : ""}><label for="${id}">${labelHtml}${extra || ""}</label>${tagTxt ? `<span class="tag ${tagCls}">${tagTxt}</span>` : ""}</li>`;
 }
-const vlink = (id: string) => ` <a class="vlink" href="${VIDEO(id)}" target="_blank" rel="noopener">assistir ↗</a>`;
+/* link da aula (Nação Fluente) e, quando houver, a aula da Ronnie (engVid) sobre o mesmo assunto */
+const vlink = (id: string) => ` <a class="vlink" href="${VIDEO(id)}" target="_blank" rel="noopener">assistir ↗</a>` +
+  (RONNIE[id] ? ` <a class="vlink" href="https://www.youtube.com/watch?v=${RONNIE[id][0]}" target="_blank" rel="noopener" title="engVid Ronnie: ${esc(RONNIE[id][1])}">Ronnie ↗</a>` : "");
 const lessonTask = (it: Lesson) => task("v" + it[2], it[0], it[1], CAT[it[1]], vlink(it[2]));
 
 /* próximo dia de aula ainda não agendado até esta data */
