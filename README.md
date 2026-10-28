@@ -64,7 +64,9 @@ Podcasts sugeridos: *BBC 6 Minute English*, *Business English Pod* e, a partir d
 
 ## Listening (YouTube)
 
-Cada dia de semana sugere até 2 vídeos de uma [playlist de listening A2](https://www.youtube.com/playlist?list=PLhNRdHEdUQexUblCTMd1ATwOd5J4SxtNM) com o mesmo tema das aulas do dia, com link para abrir e botão para copiar. Nem todo tema tem vídeo equivalente; a lista completa fica no painel **Listening A2**.
+Cada aula de vocabulário e de tópico tem o seu próprio vídeo de listening, de canais de professores de inglês (BBC Learning English, Bob the Canadian, English with Lucy, engVid, Oxford Online English, British Council e outros). Cada dia de semana mostra até 3 desses vídeos, com link para abrir e botão para copiar, sem repetir vídeo na mesma semana.
+
+Quando uma aula não tem vídeo próprio, entra um vídeo da [playlist de listening A2](https://www.youtube.com/playlist?list=PLhNRdHEdUQexUblCTMd1ATwOd5J4SxtNM) do mesmo tema. A lista completa dessa playlist fica no painel **Listening A2**.
 
 ## Resumo para o tutor
 
