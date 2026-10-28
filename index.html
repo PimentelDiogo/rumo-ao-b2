@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rumo ao B2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+body{margin:0}
+/* Layout: caderno de estudo — barra de progresso das 26 semanas no topo, depois a semana aberta dia a dia (seg–sex aulas, sáb revisão, dom livre) */
+:root{
+  --bg:#f3f5f9; --surface:#ffffff; --sunk:#e8ecf3; --line:#d5dbe6;
+  --ink:#16203a; --muted:#5a6580; --accent:#2b54d6; --accent-ink:#ffffff;
+  --gram:#5b4bd1; --gram-bg:#ecebfb; --voc:#b4680c; --voc-bg:#fbf0e1; --top:#1d7a58; --top-bg:#e2f3ec;
+  --done:#1d7a58; --today:#2b54d6;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1424; --surface:#171e33; --sunk:#1f2740; --line:#2c3655;
+  --ink:#e6eaf5; --muted:#99a3c0; --accent:#7c9cff; --accent-ink:#0f1424;
+  --gram:#a99cff; --gram-bg:#262448; --voc:#f0b05a; --voc-bg:#3a2c18; --top:#5fd0a2; --top-bg:#163a2e;
+  --done:#5fd0a2; --today:#7c9cff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1424; --surface:#171e33; --sunk:#1f2740; --line:#2c3655;
+  --ink:#e6eaf5; --muted:#99a3c0; --accent:#7c9cff; --accent-ink:#0f1424;
+  --gram:#a99cff; --gram-bg:#262448; --voc:#f0b05a; --voc-bg:#3a2c18; --top:#5fd0a2; --top-bg:#163a2e;
+  --done:#5fd0a2; --today:#7c9cff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 56px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(28px,5vw,40px);font-weight:800}
+h2{font-size:22px;font-weight:800}
+h3{font-size:15px;font-weight:600;font-family:var(--body)}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+a{color:var(--accent)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between}
+.stats{display:flex;flex-wrap:wrap;gap:22px}
+.stat b{display:block;font-family:var(--display);font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:12.5px;color:var(--muted)}
+.startbox{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.startbox input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.sync{font-size:12px;color:var(--muted)}
+
+/* trilha das 26 semanas */
+.track{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.phases{display:grid;grid-template-columns:8fr 8fr 4fr 6fr;gap:4px;font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.phases div{border-top:3px solid var(--line);padding-top:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.phases .p3{border-color:var(--accent);color:var(--ink)}
+.weeks{display:grid;grid-template-columns:repeat(26,1fr);gap:4px}
+.wk{position:relative;height:38px;border:1px solid var(--line);border-radius:5px;background:var(--sunk);cursor:pointer;padding:0;overflow:hidden;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.wk .fill{position:absolute;inset:auto 0 0 0;background:var(--done);opacity:.28}
+.wk span{position:relative}
+.wk.cur{border-color:var(--ink);color:var(--ink);font-weight:600}
+.wk.sel{outline:2px solid var(--accent);outline-offset:1px}
+.wk .flag{position:absolute;top:2px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--voc)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--voc);margin-right:5px}
+
+/* semana */
+.weekhead{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.nav{display:flex;gap:6px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13.5px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.weekmeta{display:flex;flex-direction:column;gap:2px}
+.weekmeta p{margin:0;color:var(--muted);font-size:14px}
+.focus{background:var(--gram-bg);border-radius:8px;padding:10px 14px;font-size:14px}
+.focus b{color:var(--gram)}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.day.today{border-color:var(--today);box-shadow:0 0 0 1px var(--today)}
+.day.complete .dname::after{content:"concluído";margin-left:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--done)}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dname{font-weight:600}
+.ddate{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.todaytag{font-family:var(--mono);font-size:10.5px;background:var(--today);color:var(--accent-ink);border-radius:4px;padding:1px 6px;margin-left:6px;letter-spacing:.05em}
+ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.task{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start}
+.task input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--done);cursor:pointer}
+.task label{cursor:pointer;min-width:0}
+.task.on label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.tag{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;white-space:nowrap;align-self:center}
+.tag.g{background:var(--gram-bg);color:var(--gram)}
+.tag.v{background:var(--voc-bg);color:var(--voc)}
+.tag.t{background:var(--top-bg);color:var(--top)}
+.tag.h{background:var(--sunk);color:var(--muted)}
+.vlink{font-size:12.5px;margin-left:4px;white-space:nowrap}
+.sep{border:0;border-top:1px dashed var(--line);margin:2px 0}
+.review .chips{display:flex;flex-wrap:wrap;gap:5px}
+.review .chips span{font-size:12px;padding:2px 7px;border-radius:4px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.checkpoint{background:var(--voc-bg);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.checkpoint b{color:var(--voc)}
+
+.side{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.panel ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.panel p{margin:0;font-size:14px}
+@media (max-width:640px){
+  .weeks{grid-template-columns:repeat(13,1fr)}
+  .phases{display:none}
+}
+@media (prefers-reduced-motion:no-preference){.wk .fill{transition:height .25s}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Inglês · A2 → B2 · 26 semanas</div>
+      <h1>Rumo ao B2</h1>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <section class="track" aria-label="Semanas">
+    <div class="phases"><div>Sem. 1–8 · Revisão A1–A2</div><div>Sem. 9–16 · A2–B1</div><div class="p3">Sem. 17–20 · B2</div><div>Sem. 21–26 · C1 + prova</div></div>
+    <div class="weeks" id="weeks"></div>
+    <div class="legend"><span><i></i>EF SET (teste grátis) no domingo</span><span>Barra verde = aulas assistidas na semana</span>
+      <span class="startbox"><label for="start">Início (segunda):</label><input type="date" id="start"></span>
+      <span class="sync" id="sync"></span></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div class="weekhead">
+      <div class="weekmeta"><div class="eyebrow" id="wkEyebrow"></div><h2 id="wkTitle"></h2><p id="wkDates"></p></div>
+      <div class="nav"><button class="btn" id="prev" aria-label="Semana anterior">←</button><button class="btn primary" id="todayBtn">Hoje</button><button class="btn" id="next" aria-label="Próxima semana">→</button></div>
+    </div>
+    <div class="focus" id="focus"></div>
+    <div class="days" id="days"></div>
+  </section>
+
+  <section class="side">
+    <div class="panel">
+      <h3>Rotina diária (cerca de 1h)</h3>
+      <ul>
+        <li>20–30 min de Praktika (business)</li>
+        <li>2 vídeos do dia: pause e repita as frases em voz alta</li>
+        <li>10 min de Anki com as palavras novas</li>
+        <li>Podcast: no carro, na corrida ou lavando louça</li>
+      </ul>
+      <p class="note">Já domina um vídeo da revisão (semanas 1–8)? Assista em 1,5× ou só marque e siga.</p>
+    </div>
+    <div class="panel">
+      <h3>Podcasts sugeridos</h3>
+      <ul>
+        <li><a href="https://www.bbc.co.uk/learningenglish/english/features/6-minute-english" target="_blank" rel="noopener">BBC 6 Minute English</a>: episódios curtos, ideal agora</li>
+        <li>BBC The English We Speak: expressões do dia a dia</li>
+        <li>Business English Pod: inglês de reuniões e entrevistas</li>
+        <li>A partir da semana 17: um podcast de tecnologia em inglês sobre Java ou Flutter</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Revisão de sábado</h3>
+      <p>Releia as anotações, faça o Anki da semana, escreva 5 frases com a gramática nova e me mande para correção. Depois, peça uma conversa curta comigo sobre o tema da semana.</p>
+      <p class="note">Vídeos: <a href="https://www.nacaofluente.com/blog/como-aprender-ingles-no-youtube/" target="_blank" rel="noopener">Nação Fluente</a> (cronograma de 6 meses).</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const WEEKS = [[["Present simple","g","1"],["Pronouns","g","2"],["Articles","g","3"],["Numbers (cardinal, ordinal)","v","22"],["Money","v","23"],["Countries and nationalities","v","24"],["Greeting and introducing","t","42"],["Buying and asking prices","t","43"],["Asking about personal information","t","44"],["Describing people and objects","t","45"]],[["Prepositions of place","g","4"],["Prepositions of time","g","5"],["Conjunctions, linkers","g","6"],["Languages","v","25"],["How to say the time","v","26"],["Days, dates, months, years and seasons","v","27"],["Talking about routines","t","46"],["Talking about frequency and time duration","t","47"],["Talking about likes and dislikes","t","48"],["Giving opinions","t","49"]],[["Irregular plurals","g","7"],["Possessive","g","8"],["Adjectives","g","9"],["Shops and places","v","28"],["Interests, sports and activities","v","29"],["Jobs","v","30"],["Rooms and furniture","v","31"],["Talking about past experiences","t","50"],["Inviting, refusing, accepting, thanking","t","51"],["Requesting, offering","t","52"]],[["Too, very","g","10"],["Can (ability, possibility)","g","11"],["Short form answers","g","12"],["Going to (future plans)","g","13"],["Colours","v","32"],["Size and weight","v","33"],["Body parts and appearance","v","34"],["Food, meals, cooking","v","35"],["Asking permission","t","53"],["Expressing opinions","t","86"]],[["Will (offers)","g","14"],["Adverbs of frequency","g","15"],["Imperatives","g","16"],["Past simple","g","17"],["Weather","v","36"],["Transport","v","37"],["Health","v","38"],["Feelings and emotions","v","39"],["Justifying opinions","t","87"],["Talking about routines and habits","t","88"]],[["Present continuous","g","18"],["Comparatives","g","19"],["Superlatives","g","20"],["Street directions","v","40"],["Clothes","v","41"],["Families","v","70"],["Food and meals","v","71"],["Clothing and shopping","v","72"],["Talking about intentions (part 1)","t","89"],["Talking about intentions (part 2)","t","90"]],[["Irregular adverbs","g","21"],["Countable, uncountable nouns","g","55"],["Adverbs of frequency and manner","g","56"],["Too, not enough","g","57"],["Prices","v","73"],["Daily routines","v","74"],["Personality","v","75"],["How to talk about life experiences","t","91"],["Talking about experience","t","92"],["Talking about feelings","t","93"]],[["Can, could for requests","g","58"],["Adjectives","g","59"],["Adverbs and adjectives as modifiers","g","60"],["Present continuous for temporary situations","g","61"],["Appearance","v","76"],["Present and childhood abilities","v","77"],["Basic suffixes","v","78"],["Making comparisons","t","94"],["Inviting","t","95"],["Making decisions","t","96"]],[["Present continuous for the future","g","62"],["Comparative and superlative","g","63"],["Present perfect","g","64"],["Work and jobs","v","79"],["Transport","v","80"],["Travel","v","81"],["Describing things","t","97"],["Buying things","t","98"],["Talking about possibility","t","99"],["Expressing hopes","t","100"]],[["Should for advice","g","65"],["Have to, need to, must","g","66"],["Be like for descriptions","g","67"],["Present simple for future facts","g","68"],["Machines and inventions","v","82"],["Festivals and celebrations","v","83"],["Hotel situations","v","84"],["Talking about rules and obligations","t","101"],["Giving instructions","t","102"],["Making offers","t","103"]],[["Future simple for future facts","g","69"],["Past continuous","g","109"],["Present perfect","g","110"],["Weather and climate","v","85"],["Describing people","v","124"],["Speak about health and illness","v","125"],["Types of music and concerts","v","126"],["Advising","t","104"],["Suggesting","t","105"],["Apologizing","t","106"]],[["Going to and will for predictions","g","111"],["Reflexive pronouns","g","112"],["So, such","g","113"],["Household equipment","v","127"],["Biographical information","v","128"],["Buildings and monuments","v","129"],["Congratulating","t","107"],["Talking about future arrangements","t","108"],["Asking personal questions","t","140"],["Talking about personal experiences","t","141"]],[["Passive","g","114"],["When, while","g","115"],["Must, might for deductions","g","116"],["Clothes and accessories","v","130"],["Large numbers","v","131"],["Travel and tourism","v","132"],["Work and careers","v","133"],["Asking directions","t","142"],["Describing personality","t","143"],["Making travel arrangements","t","144"]],[["As soon as","g","117"],["Be able to","g","118"],["Be good at","g","119"],["Hobbies, sports and interests","v","134"],["Education","v","135"],["Life changes and events","v","136"],["Political systems and change","v","137"],["Ordering in a restaurant","t","145"],["Talking about preferences","t","146"],["Expressing preferences","t","147"]],[["First conditional","g","120"],["Used to + verb","g","121"],["Relative clauses","g","122"],["Animals","v","138"],["Restaurants and leisure venues","v","139"],["Appearances","v","171"],["Making deductions","t","148"],["Making predictions","t","149"],["Making suggestions","t","150"],["Making offers","t","151"]],[["Although, however","g","123"],["Used to + infinitive","g","154"],["Past simple and present perfect","g","155"],["Neither, so do I","g","156"],["Character","v","172"],["Make and do","v","173"],["Housework","v","174"],["Holidays and travel brochures","v","175"],["Talking about obligation","t","152"],["Requesting","t","153"]],[["Modal verbs","g","157"],["Reported speech","g","158"],["First, second conditional","g","159"],["Illness","v","176"],["Cooking","v","177"],["Furniture and appliances","v","178"],["Describing location, people and things","t","187"],["Stating preferences and opinions","t","188"],["Reporting requests and orders","t","189"],["Guessing","t","190"]],[["Adverbs of manner and modifiers","g","160"],["Adjectives and their connotations","g","161"],["Present perfect continuous","g","162"],["Types of books, films, and TV programs","v","179"],["Crime and punishment","v","180"],["Political systems","v","181"],["Possibility, probability and certainty","t","191"],["Describing faulty goods","t","192"],["Refusing","t","193"],["Summarizing","t","225"]],[["Look + adjective, look like + noun","g","163"],["Be able to, can, manage to","g","164"],["Past perfect simple","g","165"],["Have and have got","g","166"],["Family relationships","v","182"],["Pets and animals","v","183"],["Consumer services","v","184"],["Expressing regret","t","226"],["Drawing conclusions","t","227"],["Describing cause and effect","t","228"]],[["Be allowed to and be supposed to","g","167"],["A few, a little, few, little","g","168"],["Although, in spite of, despite","g","169"],["Hotel facilities","v","185"],["Affixes","v","186"],["Collocations","v","211"],["Work, working conditions","v","212"],["Stating purpose","t","229"],["Emphasizing","t","230"],["Stating contrast","t","231"]],[["Question tags","g","170"],["Future perfect continuous","g","277"],["Past perfect continuous","g","278"],["Approximations with -ish","v","213"],["Transportation","v","214"],["Relationships","v","215"],["Connotation","v","216"],["Contradicting","t","264"],["Instructing","t","265"],["Expressing opinions formally and informally","t","266"]],[["Habit in the present and in the past","g","194"],["Present perfect simple and continuous","g","195"],["Past simple, past continuous, past perfect","g","196"],["Will, going to","g","197"],["Future perfect","g","198"],["Homonyms","v","217"],["Idiomatic expressions","v","218"],["Sport and leisure","v","219"],["Checking and clarifying information","t","267"],["Paraphrasing","t","268"]],[["Phrasal verbs","g","199"],["Zero, first, second and third conditionals","g","200"],["Wish and If only","g","201"],["Compounds of some, any, no, every","g","202"],["Euphemisms","v","220"],["Geography and climate","v","221"],["At the bank","v","222"],["Colloquial expressions and slang","v","223"],["Expanding and exemplifying","t","269"],["Persuading and convincing","t","270"]],[["Though, although, despite, in spite of","g","203"],["Unless","g","204"],["Otherwise","g","205"],["Modals: present and perfect","g","206"],["Participle adjectives","v","224"],["Astrology and religions","v","246"],["Nostalgia","v","247"],["Coincidences and experiences","v","248"],["Speculating","t","271"],["Expressing annoyance","t","272"]],[["Always for frequency + present continuous","g","207"],["Habit in the present and the past participle","g","208"],["Present perfect simple and continuous","g","209"],["Participles","g","210"],["Uses of continuous tenses","g","237"],["Learning and educational systems","v","249"],["Eccentricity and individuality","v","250"],["Creativity","v","251"],["Comparing and contrasting","t","273"],["Describing people","t","274"]],[["Uses of would","g","238"],["Past perfect","g","239"],["Order of adverbs","g","240"],["Order of adjectives","g","241"],["Ellipsis and elision","g","242"],["Age and cultural differences","v","252"],["Gender","v","253"],["Politics","v","254"],["Describing things","t","275"],["Describing situations","t","276"]]]
+;
+const CAT = {g:"gramática", v:"vocabulário", t:"tópico"};
+const VIDEO = id => "https://www.nacaofluente.com/blog/como-aprender-ingles-no-youtube/?video=" + id;
+const DAYN = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
+const CHECKPOINTS = {8:"Faça o EF SET de 90 min para ver seu nível de partida.", 16:"EF SET de novo: a meta é B1 firme.", 20:"EF SET: se der B2 com folga, marque o B2 First.", 26:"Último EF SET antes da prova."};
+const LEVEL = w => w<=8 ? "Revisão A1–A2" : w<=16 ? "A2–B1" : w<=20 ? "B2" : "C1 · reforço para a prova";
+const DEFAULT_START = "2026-11-02";
+const LSKEY = "rumo-b2-v1";
+
+let state = {start: DEFAULT_START, done: {}};
+try { const s = JSON.parse(localStorage.getItem(LSKEY) || "null"); if (s && s.done) state = s; } catch(e){}
+
+/* distribui as 10 aulas em 5 dias, intercalando gramática, vocabulário e tópicos */
+function plan(w){
+  const items = WEEKS[w-1], by = {g:[],v:[],t:[]};
+  items.forEach(it => by[it[1]].push(it));
+  const order = []; let i = 0;
+  while (order.length < items.length){ for (const c of ["g","v","t"]) if (by[c][i]) order.push(by[c][i]); i++; }
+  return [0,1,2,3,4].map(d => order.slice(d*2, d*2+2));
+}
+
+function parseDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+function dayDate(w, d){ const x = parseDate(state.start); x.setDate(x.getDate() + (w-1)*7 + d); return x; }
+const fmt = new Intl.DateTimeFormat("pt-PT", {day:"numeric", month:"short"});
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function currentWeek(){
+  const diff = Math.floor((new Date().setHours(0,0,0,0) - parseDate(state.start)) / 86400000);
+  return Math.min(26, Math.max(1, Math.floor(diff/7) + 1));
+}
+function weekDone(w){ return WEEKS[w-1].filter(it => state.done["v"+it[2]]).length; }
+
+let sel = currentWeek();
+
+function stats(){
+  const total = WEEKS.flat().length, vids = WEEKS.flat().filter(it => state.done["v"+it[2]]).length;
+  let prak = 0, pod = 0; for (const k in state.done){ if (!state.done[k]) continue; if (k.startsWith("p-")) prak++; if (k.startsWith("c-")) pod++; }
+  const cw = currentWeek();
+  document.getElementById("stats").innerHTML =
+    `<div class="stat"><b>${vids}/${total}</b><span>vídeos assistidos</span></div>
+     <div class="stat"><b>${prak}</b><span>dias de Praktika</span></div>
+     <div class="stat"><b>${pod}</b><span>podcasts</span></div>
+     <div class="stat"><b>Sem. ${cw}</b><span>${LEVEL(cw)}</span></div>`;
+}
+
+function track(){
+  const cw = currentWeek(), el = document.getElementById("weeks");
+  el.innerHTML = "";
+  for (let w=1; w<=26; w++){
+    const b = document.createElement("button");
+    b.className = "wk" + (w===cw ? " cur" : "") + (w===sel ? " sel" : "");
+    b.innerHTML = `<div class="fill" style="height:${weekDone(w)*10}%"></div><span>${w}</span>` + (CHECKPOINTS[w] ? `<i class="flag"></i>` : "");
+    b.title = `Semana ${w}: ${weekDone(w)}/10 vídeos`;
+    b.setAttribute("aria-label", b.title);
+    b.onclick = () => { sel = w; render(); };
+    el.appendChild(b);
+  }
+}
+
+function task(key, labelHtml, tagCls, tagTxt, extra){
+  const on = !!state.done[key];
+  return `<li class="task${on?" on":""}"><input type="checkbox" id="${key}" data-k="${key}" ${on?"checked":""}><label for="${key}">${labelHtml}${extra||""}</label>${tagTxt?`<span class="tag ${tagCls}">${tagTxt}</span>`:""}</li>`;
+}
+
+function week(){
+  const w = sel, days = plan(w), today = new Date(), items = WEEKS[w-1];
+  document.getElementById("wkEyebrow").textContent = `Semana ${w} de 26 · ${LEVEL(w)}`;
+  document.getElementById("wkTitle").textContent = items.filter(i=>i[1]==="g").map(i=>i[0]).join(" · ");
+  document.getElementById("wkDates").textContent = `${fmt.format(dayDate(w,0))} a ${fmt.format(dayDate(w,6))} · ${weekDone(w)}/10 vídeos`;
+  const tips = {5:"Past simple está aqui: é um dos seus pontos fracos, não pule.", 16:"Past simple vs Present perfect: foco total, cai muito na prova.", 17:"Second conditional: é o \"I would…\" que você trocava por \"I will\".", 11:"Past continuous e Present perfect juntos: faça frases sobre o seu último emprego.", 22:"Revise todos os passados: Past simple, continuous e perfect."};
+  document.getElementById("focus").innerHTML = tips[w] ? `<b>Foco:</b> ${tips[w]}` : `<b>Foco:</b> assista, repita em voz alta e anote 5 frases úteis por dia.`;
+  let html = "";
+  for (let d=0; d<7; d++){
+    const dt = dayDate(w,d), isToday = sameDay(dt,today);
+    let body = "", keys = [];
+    if (d < 5){
+      days[d].forEach(it => { const k = "v"+it[2]; keys.push(k);
+        body += task(k, it[0], it[1], CAT[it[1]], ` <a class="vlink" href="${VIDEO(it[2])}" target="_blank" rel="noopener">assistir ↗</a>`); });
+      body += `<hr class="sep">`;
+      const kp = `p-${w}-${d}`, kc = `c-${w}-${d}`; keys.push(kp);
+      body += task(kp, "Praktika (20–30 min)", "h", "app") + task(kc, "Podcast (opcional)", "h", "ouvir");
+    } else if (d === 5){
+      const chips = items.map(it => `<span class="tag ${it[1]}">${it[0]}</span>`).join("");
+      const r = ["Reler anotações da semana","Anki com o vocabulário da semana","Escrever 5 frases com a gramática nova e mandar ao Claude","Conversa de 10 min com o Claude sobre os temas"];
+      r.forEach((t,i) => { const k = `r-${w}-${i}`; keys.push(k); body += task(k, t); });
+      body = `<div class="review chips">${chips}</div><ul class="tasks">${body}</ul>`;
+    } else {
+      const kc = `c-${w}-6`;
+      body = task(kc, "Podcast ou série em inglês com legenda em inglês", "h", "livre");
+      if (CHECKPOINTS[w]){ const k = `e-${w}`; keys.push(k); body += task(k, "EF SET de 90 min", "v", "teste"); }
+      body = `<ul class="tasks">${body}</ul>` + (CHECKPOINTS[w] ? `<div class="checkpoint"><b>Checkpoint:</b> ${CHECKPOINTS[w]} <a href="https://www.efset.org/" target="_blank" rel="noopener">efset.org ↗</a></div>` : `<p class="note">Dia de descanso. Se quiser, adiante um vídeo atrasado.</p>`);
+    }
+    if (d < 5) body = `<ul class="tasks">${body}</ul>`;
+    const complete = keys.length && keys.every(k => state.done[k]);
+    const title = d===5 ? "Sábado · revisão" : d===6 ? "Domingo" : DAYN[d];
+    html += `<article class="day${isToday?" today":""}${complete?" complete":""}"><div class="dhead"><span class="dname">${title}${isToday?'<span class="todaytag">HOJE</span>':""}</span><span class="ddate">${fmt.format(dt)}</span></div>${body}</article>`;
+  }
+  document.getElementById("days").innerHTML = html;
+}
+
+function render(){ stats(); track(); week(); document.getElementById("start").value = state.start; }
+
+/* guardar: no navegador e, quando disponível, na conta (sincroniza entre dispositivos) */
+let docRef = null, saveTimer = null;
+const syncEl = document.getElementById("sync");
+function save(){
+  try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch(e){}
+  if (!docRef) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try { await docRef.set({start: state.start, done: state.done}); syncEl.textContent = "Progresso salvo na sua conta"; }
+    catch(e){ syncEl.textContent = "Salvo só neste navegador"; }
+  }, 600);
+}
+
+document.getElementById("days").addEventListener("change", e => {
+  const k = e.target.dataset && e.target.dataset.k; if (!k) return;
+  if (e.target.checked) state.done[k] = true; else delete state.done[k];
+  save(); render();
+});
+document.getElementById("start").addEventListener("change", e => { if (e.target.value){ state.start = e.target.value; sel = currentWeek(); save(); render(); } });
+document.getElementById("prev").onclick = () => { if (sel>1){ sel--; render(); } };
+document.getElementById("next").onclick = () => { if (sel<26){ sel++; render(); } };
+document.getElementById("todayBtn").onclick = () => { sel = currentWeek(); render(); };
+
+render();
+
+(async () => {
+  syncEl.textContent = "Salvo neste navegador";
+  try {
+    if (!window.claude || !claude.use) return;
+    const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id(); if (!id) return;
+    docRef = db.collection("data/users/" + id).doc("progresso");
+    const snap = await docRef.get();
+    if (snap.exists){
+      const d = snap.data() || {};
+      state = {start: d.start || state.start, done: Object.assign({}, state.done, d.done || {})};
+    }
+    syncEl.textContent = "Progresso salvo na sua conta";
+    save(); render();
+    docRef.onSnapshot(s => { if (!s.exists) return; const d = s.data() || {};
+      if (JSON.stringify(d.done) !== JSON.stringify(state.done) || d.start !== state.start){
+        state = {start: d.start || state.start, done: d.done || {}}; try{localStorage.setItem(LSKEY, JSON.stringify(state));}catch(e){} render(); } });
+  } catch(e){ syncEl.textContent = "Salvo só neste navegador"; }
+})();
+</script>
+
+</body>
+</html>
