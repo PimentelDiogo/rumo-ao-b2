@@ -99,9 +99,15 @@ function scheduled(n: number): number[] {
   return r.filter(i => i >= 0 && i < TOTAL);
 }
 function weekdayOf(idx: number): number { return state.pace === 3 ? Math.floor(idx / 2) : state.pace === 6 ? idx : idx * 2; }
-const calWeekOf = (idx: number) => Math.floor(weekdayOf(idx) / 5) + 1;
+/* o início pode cair em qualquer dia: a grade começa na segunda daquela semana (fim de semana passa para a segunda seguinte) */
+function startDow(): number { return (parseDate(state.start).getDay() + 6) % 7; }
+const startOffset = () => startDow() < 5 ? startDow() : 0;
+function firstMonday(): Date { const x = parseDate(state.start), dow = startDow(); x.setDate(x.getDate() + (dow < 5 ? -dow : 7 - dow)); return x; }
+/* n-ésimo dia útil do plano para uma célula da grade; negativo = antes do início */
+const weekdayN = (wk: number, d: number) => (wk - 1) * 5 + d - startOffset();
+const calWeekOf = (idx: number) => Math.floor((weekdayOf(idx) + startOffset()) / 5) + 1;
 const numWeeks = () => calWeekOf(TOTAL - 1);
-function weekIdx(wk: number): number[] { return [0, 1, 2, 3, 4].flatMap(d => scheduled((wk - 1) * 5 + d)); }
+function weekIdx(wk: number): number[] { return [0, 1, 2, 3, 4].flatMap(d => scheduled(weekdayN(wk, d))); }
 function weekDone(wk: number): [number, number] {
   const vids = weekIdx(wk).flatMap(i => DAYS[i].items);
   return [vids.filter(it => state.done["v" + it[2]]).length, vids.length];
@@ -112,11 +118,11 @@ function levelOfWeek(wk: number): string { const i = weekIdx(wk)[0]; return LEVE
 /* ---------- datas ---------- */
 function parseDate(s: string): Date { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
 function iso(dt: Date): string { return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; }
-function dayDate(wk: number, d: number): Date { const x = parseDate(state.start); x.setDate(x.getDate() + (wk - 1) * 7 + d); return x; }
-function plannedDate(idx: number): Date { const n = weekdayOf(idx); return dayDate(Math.floor(n / 5) + 1, n % 5); }
+function dayDate(wk: number, d: number): Date { const x = firstMonday(); x.setDate(x.getDate() + (wk - 1) * 7 + d); return x; }
+function plannedDate(idx: number): Date { const n = weekdayOf(idx) + startOffset(); return dayDate(Math.floor(n / 5) + 1, n % 5); }
 const fmt = new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "short" });
 function currentWeek(): number {
-  const diff = Math.round((new Date().setHours(0, 0, 0, 0) - parseDate(state.start).getTime()) / 86400000);
+  const diff = Math.round((new Date().setHours(0, 0, 0, 0) - firstMonday().getTime()) / 86400000);
   return Math.min(numWeeks(), Math.max(1, Math.floor(diff / 7) + 1));
 }
 
@@ -173,11 +179,11 @@ const lessonTask = (it: Lesson) => task("v" + it[2], it[0], it[1], CAT[it[1]], v
 
 /* próximo dia de aula ainda não agendado até esta data */
 function nextAdvance(dateIso: string): number {
-  const diff = Math.round((parseDate(dateIso).getTime() - parseDate(state.start).getTime()) / 86400000);
+  const diff = Math.round((parseDate(dateIso).getTime() - firstMonday().getTime()) / 86400000);
   let last = -1;
   if (diff >= 0) {
-    const n = Math.floor(diff / 7) * 5 + Math.min(diff % 7, 4);
-    last = state.pace === 3 ? 2 * n + 1 : state.pace === 6 ? n : Math.floor(n / 2);
+    const n = Math.floor(diff / 7) * 5 + Math.min(diff % 7, 4) - startOffset();
+    if (n >= 0) last = state.pace === 3 ? 2 * n + 1 : state.pace === 6 ? n : Math.floor(n / 2);
   }
   Object.values(state.extra).forEach(l => l.forEach(e => { if (e.kind === "adv") last = Math.max(last, e.ref as number); }));
   return last + 1;
@@ -223,8 +229,12 @@ function week() {
   for (let d = 0; d < 7; d++) {
     const dt = dayDate(wk, d), di = iso(dt), isToday = iso(today) === di, keys: string[] = [];
     let body = "";
+    if (d < 5 && weekdayN(wk, d) < 0) {
+      html += `<article class="day off"><div class="dhead"><span class="dname">${DAYN[d]}</span><span class="ddate">${fmt.format(dt)}</span></div><p class="note">Antes do início do plano.</p></article>`;
+      continue;
+    }
     if (d < 5) {
-      const sd = scheduled((wk - 1) * 5 + d), lessons = sd.flatMap(i => DAYS[i].items);
+      const sd = scheduled(weekdayN(wk, d)), lessons = sd.flatMap(i => DAYS[i].items);
       lessons.forEach(it => { keys.push("v" + it[2]); body += lessonTask(it); });
       if (lessons.length) body += `<hr class="sep">`;
       const kp = `p-${di}`, kc = `c-${di}`; keys.push(kp);

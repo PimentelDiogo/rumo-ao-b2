@@ -89,9 +89,13 @@ function scheduled(n) {
     return r.filter(i => i >= 0 && i < TOTAL);
 }
 function weekdayOf(idx) { return state.pace === 3 ? Math.floor(idx / 2) : state.pace === 6 ? idx : idx * 2; }
-const calWeekOf = (idx) => Math.floor(weekdayOf(idx) / 5) + 1;
+function startDow() { return (parseDate(state.start).getDay() + 6) % 7; }
+const startOffset = () => startDow() < 5 ? startDow() : 0;
+function firstMonday() { const x = parseDate(state.start), dow = startDow(); x.setDate(x.getDate() + (dow < 5 ? -dow : 7 - dow)); return x; }
+const weekdayN = (wk, d) => (wk - 1) * 5 + d - startOffset();
+const calWeekOf = (idx) => Math.floor((weekdayOf(idx) + startOffset()) / 5) + 1;
 const numWeeks = () => calWeekOf(TOTAL - 1);
-function weekIdx(wk) { return [0, 1, 2, 3, 4].flatMap(d => scheduled((wk - 1) * 5 + d)); }
+function weekIdx(wk) { return [0, 1, 2, 3, 4].flatMap(d => scheduled(weekdayN(wk, d))); }
 function weekDone(wk) {
     const vids = weekIdx(wk).flatMap(i => DAYS[i].items);
     return [vids.filter(it => state.done["v" + it[2]]).length, vids.length];
@@ -99,11 +103,11 @@ function weekDone(wk) {
 function levelOfWeek(wk) { const i = weekIdx(wk)[0]; return LEVEL(i === undefined ? 26 : DAYS[i].w); }
 function parseDate(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
 function iso(dt) { return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; }
-function dayDate(wk, d) { const x = parseDate(state.start); x.setDate(x.getDate() + (wk - 1) * 7 + d); return x; }
-function plannedDate(idx) { const n = weekdayOf(idx); return dayDate(Math.floor(n / 5) + 1, n % 5); }
+function dayDate(wk, d) { const x = firstMonday(); x.setDate(x.getDate() + (wk - 1) * 7 + d); return x; }
+function plannedDate(idx) { const n = weekdayOf(idx) + startOffset(); return dayDate(Math.floor(n / 5) + 1, n % 5); }
 const fmt = new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "short" });
 function currentWeek() {
-    const diff = Math.round((new Date().setHours(0, 0, 0, 0) - parseDate(state.start).getTime()) / 86400000);
+    const diff = Math.round((new Date().setHours(0, 0, 0, 0) - firstMonday().getTime()) / 86400000);
     return Math.min(numWeeks(), Math.max(1, Math.floor(diff / 7) + 1));
 }
 let sel = currentWeek();
@@ -158,11 +162,12 @@ const vlink = (id) => ` <a class="vlink" href="${VIDEO(id)}" target="_blank" rel
     (RONNIE[id] ? ` <a class="vlink" href="https://www.youtube.com/watch?v=${RONNIE[id][0]}" target="_blank" rel="noopener" title="engVid Ronnie: ${esc(RONNIE[id][1])}">Ronnie ↗</a>` : "");
 const lessonTask = (it) => task("v" + it[2], it[0], it[1], CAT[it[1]], vlink(it[2]));
 function nextAdvance(dateIso) {
-    const diff = Math.round((parseDate(dateIso).getTime() - parseDate(state.start).getTime()) / 86400000);
+    const diff = Math.round((parseDate(dateIso).getTime() - firstMonday().getTime()) / 86400000);
     let last = -1;
     if (diff >= 0) {
-        const n = Math.floor(diff / 7) * 5 + Math.min(diff % 7, 4);
-        last = state.pace === 3 ? 2 * n + 1 : state.pace === 6 ? n : Math.floor(n / 2);
+        const n = Math.floor(diff / 7) * 5 + Math.min(diff % 7, 4) - startOffset();
+        if (n >= 0)
+            last = state.pace === 3 ? 2 * n + 1 : state.pace === 6 ? n : Math.floor(n / 2);
     }
     Object.values(state.extra).forEach(l => l.forEach(e => { if (e.kind === "adv")
         last = Math.max(last, e.ref); }));
@@ -214,8 +219,12 @@ function week() {
     for (let d = 0; d < 7; d++) {
         const dt = dayDate(wk, d), di = iso(dt), isToday = iso(today) === di, keys = [];
         let body = "";
+        if (d < 5 && weekdayN(wk, d) < 0) {
+            html += `<article class="day off"><div class="dhead"><span class="dname">${DAYN[d]}</span><span class="ddate">${fmt.format(dt)}</span></div><p class="note">Antes do início do plano.</p></article>`;
+            continue;
+        }
         if (d < 5) {
-            const sd = scheduled((wk - 1) * 5 + d), lessons = sd.flatMap(i => DAYS[i].items);
+            const sd = scheduled(weekdayN(wk, d)), lessons = sd.flatMap(i => DAYS[i].items);
             lessons.forEach(it => { keys.push("v" + it[2]); body += lessonTask(it); });
             if (lessons.length)
                 body += `<hr class="sep">`;

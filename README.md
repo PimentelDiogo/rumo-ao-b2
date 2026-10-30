@@ -100,7 +100,7 @@ Testes **EF SET** (90 min, gratuitos) para medir o nível. Ficam no domingo da s
 
 ## Como usar
 
-1. Abra o site e escolha a **data de início** (uma segunda-feira) e o **ritmo**.
+1. Abra o site e escolha a **data de início** (qualquer dia) e o **ritmo**.
 2. Marque os vídeos e tarefas conforme avança; o progresso aparece na trilha de semanas.
 3. Quando quiser conversar com o tutor, copie o **Resumo das atividades** e cole no Claude.
 

@@ -75,6 +75,7 @@ header.top{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justif
 .focus b{color:var(--gram)}
 .days{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .day{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.day.off{opacity:.55}
 .day.today{border-color:var(--today);box-shadow:0 0 0 1px var(--today)}
 .day.complete .dname::after{content:"concluído";margin-left:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--done)}
 .dhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -150,7 +151,7 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
     <div class="weeks" id="weeks"></div>
     <div class="legend"><span><i></i>EF SET (teste grátis) no domingo</span><span>Barra verde = aulas assistidas na semana</span>
       <span class="startbox"><label for="pace">Ritmo:</label><select id="pace"><option value="3">3 meses (2 aulas/dia)</option><option value="6">6 meses (1 aula/dia)</option><option value="12">12 meses (1 aula a cada 2 dias)</option></select></span>
-      <span class="startbox"><label for="start">Início (segunda):</label><input type="date" id="start"></span>
+      <span class="startbox"><label for="start">Início:</label><input type="date" id="start"></span>
       <span class="sync" id="sync"></span></div>
   </section>
 
